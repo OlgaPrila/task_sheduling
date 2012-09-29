@@ -45,12 +45,14 @@
     z-index: 10;
     /*border-radius: 32px;*/
     border-radius: 70px;
-    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
     position: absolute;
+    left:10px;
+    top:10px;
 }
 
 .node:active {
-    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
 }
 
 .node > .info {
@@ -65,8 +67,7 @@
     text-align: center;
     font-size: 30px;
     line-height: 40px;
-    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
-
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
 }
 
 .left-connector, .right-connector {

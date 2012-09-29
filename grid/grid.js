@@ -12,31 +12,36 @@ $.extend({
 
     grid_init:function () {
         $('head').append('<link rel="stylesheet" type="text/css" href="./grid/grid.css">');
-        this.Grid.it = $('.grid');
-        this.info = $('.info-table');
-        this.canvas_init();
+        $.Grid.it = $('.grid');
+        $.info = $('.info-table');
+        $.canvas_init();
 
-        this.info.toggle();
+        $.info.toggle();
 
         $('#addNodeBtn').click(function () {
             $.add_node();
         });
 
-        $('#close').click(function () {
-            this.info.hide();
+        $.info.children('#save').click(function() {
+
+            $.info.hide();
         });
 
-        this.borders = {
-            left:this.Grid.it.offset().left,
-            top:this.Grid.it.offset().top,
-            right:this.Grid.it.offset().left + this.Grid.it.css('width'),
-            bottom:this.Grid.it.offset().top + this.Grid.it.css('height')
+        $.info.children('#close').click(function () {
+            $.info.hide();
+        });
+
+        $.borders = {
+            left:$.Grid.it.offset().left,
+            top:$.Grid.it.offset().top,
+            right:$.Grid.it.offset().left + $.Grid.it.css('width'),
+            bottom:$.Grid.it.offset().top + $.Grid.it.css('height')
         }
     },
 
     canvas_init:function () {
-        this.canvas = document.getElementById('gCanvas');
-        //TODO:change 450 on gView height. Dont know why, but it does not work right now O_o
+        $.canvas = document.getElementById('gCanvas');
+        //@TODO:change 450 on gView height. Dont know why, but it does not work right now O_o
         $('#gCanvas').attr('width', $('.gView').width()).attr('height', 750);
     },
 
@@ -57,17 +62,17 @@ $.extend({
             '<div class="info" id="' + newID + '">i</div>' +
             '<div class="left-connector" id="' + newID + '"></div>' +
             '<div class="right-connector" id="' + newID + '"></div></div>');
-        this.Grid.nodes.push({
+        $.Grid.nodes.push({
             id:newID,
             field1:'TEXT',
             field2:Math.floor(Math.random() * 10) * newID
         });
     },
 
-    renderLinks:function () {
-        if (this.canvas.getContext) {
-            var ctx = this.canvas.getContext('2d');
-            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    renderLinks:function (aditional) {
+        if ($.canvas.getContext) {
+            var ctx = $.canvas.getContext('2d');
+            ctx.clearRect(0, 0, $.canvas.width, $.canvas.height);
             var links = $.Grid.links;
             var c = ($('.left-connector').width()) / 2;
             $(links).each(function (key, lnk) {
@@ -78,12 +83,16 @@ $.extend({
 
                 $.drawLink(ctx, xStart, yStart, xFinish, yFinish);
             });
+            if (aditional) {
+                var x1 = aditional.from.offset().left + c;
+                var y1 = aditional.from.offset().top + c;
+                $.drawLink(ctx, x1, y1, aditional.to.pageX, aditional.to.pageY);
+            }
         } else {
-            alert('You need Chrome, Safari or Firefox 1.5+ to work with this product.');
+            alert('You need Chrome, Safari, IE 8 or Firefox 1.5+ to work with this product.');
         }
     }
 });
-
 
 $(document).ready(function () {
     $.grid_init();
@@ -96,20 +105,22 @@ $(document).ready(function () {
                 $.drag.xDiff = event.pageX - $.drag.node.offset().left;
                 $.drag.yDiff = event.pageY - $.drag.node.offset().top;
                 $(document).mousemove(function (event) {
-                    $.drag.node.css({left:event.pageX - $.drag.xDiff,
-                                    top:event.pageY - $.drag.yDiff});
+                    $.drag.node.css({left:event.pageX - $.drag.xDiff, top:event.pageY - $.drag.yDiff});
                     $.renderLinks();
                 });
                 $.info.hide();
                 break;
             case 'right-connector':
+                $(document).mousemove(function(ev) {
+                    $.renderLinks({from:$(event.target),to:ev});
+                });
                 $(document).mouseover(function (e) {
                     var start = $(event.target);
                     var finish = $(e.target);
 
                     if (finish.attr('class') == 'left-connector') {
                         if (start.attr('id') != finish.attr('id')) {
-                            var weight = 1;//= prompt('Set weight of the link');
+                            var weight = 1;//prompt('Set weight of the link');
                             var id = $.Grid.links.length;
                             $.Grid.links.push({
                                 id:id,
@@ -120,6 +131,7 @@ $(document).ready(function () {
                                 weight:weight
                             });
                             $(document).unbind('mouseover');
+                            $(document).unbind('mousemove');
                             $.renderLinks();
                         }
                     }
@@ -137,8 +149,8 @@ $(document).ready(function () {
 
                 $.info.css({left:evnt.offset().left + 50});
                 $.info.css({top:evnt.offset().top - 30});
-                $('.info-table > #field1').val($.Grid.nodes[evnt.attr('id')].field1);
-                $('.info-table > #field2').val($.Grid.nodes[evnt.attr('id')].field2);
+                $.info.children('#field1').val($.Grid.nodes[evnt.attr('id')].field1);
+                $.info.children('#field2').val($.Grid.nodes[evnt.attr('id')].field2);
                 break;
         }
     });
@@ -151,6 +163,8 @@ $(document).ready(function () {
             case 'node':
                 $(document).unbind('mousemove');
                 break;
+            case 'right-connector':
+                $(document).unbind('mousemove');
             default:
             //console.log('default in mouseup');
         }
