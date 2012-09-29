@@ -1,0 +1,107 @@
+.grid {
+    width: 100%;
+    height: 600px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: #def5ff;
+}
+
+#gCanvas {
+    z-index: 0;
+    position: absolute;
+}
+
+.gView-wrapper {
+
+    width: 100%;
+    height: 570px;
+}
+
+.gView {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+}
+
+.gControlls {
+    width:100%;
+    height: 30px;
+    position:relative;
+    background-color: #6aff60;
+    z-index: 999;
+}
+
+.node {
+    width:140px;
+    min-height:140px;
+    background-color: #9acd32;
+    z-index: 10;
+    /*border-radius: 32px;*/
+    border-radius: 70px;
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.18);
+    position: absolute;
+}
+
+.node:active {
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+.node > .info {
+    position: relative;
+    cursor: pointer;
+    margin:50px;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    color: white;
+    background-color: #afe636;
+    text-align: center;
+    font-size: 30px;
+    line-height: 40px;
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+
+}
+
+.left-connector, .right-connector {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background-color: #ffd700;
+    text-align: center;
+    line-height: 32px;
+    position: absolute;
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.left-connector:hover, .right-connector:hover  {
+    background-color: #ffe699;
+    cursor: pointer;
+}
+
+.node > .left-connector {
+    left: -8px;
+    top:60px;
+}
+
+.node > .right-connector {
+    right:-8px;
+    top:60px;
+}
+
+.info-table {
+    position: absolute;
+    padding: 10px;
+    z-index: 999;
+    border-radius: 6px;
+    font-family: sans-serif;
+    font-size: 15px;
+    background-color: #ebffda;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
