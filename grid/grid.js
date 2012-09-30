@@ -8,7 +8,7 @@ $.extend({
     },
 
     canvas:null,
-    info: null,
+    info:null,
 
     grid_init:function () {
         $('head').append('<link rel="stylesheet" type="text/css" href="./grid/grid.css">');
@@ -22,7 +22,11 @@ $.extend({
             $.add_node();
         });
 
-        $.info.children('#save').click(function() {
+        $('#generateBtn').click(function () {
+            $.generateScheme();
+        });
+
+        $.info.children('#save').click(function () {
 
             $.info.hide();
         });
@@ -34,8 +38,8 @@ $.extend({
         $.borders = {
             left:$.Grid.it.offset().left,
             top:$.Grid.it.offset().top,
-            right:$.Grid.it.offset().left + $.Grid.it.css('width'),
-            bottom:$.Grid.it.offset().top + $.Grid.it.css('height')
+            right:$.Grid.it.offset().left + $.Grid.it.width(),
+            bottom:$.Grid.it.offset().top + $.Grid.it.height()
         }
     },
 
@@ -69,6 +73,11 @@ $.extend({
         });
     },
 
+    unbind:function() {
+        $(document).unbind('mousemove');
+        $(document).unbind('mouseover');
+    },
+
     renderLinks:function (aditional) {
         if ($.canvas.getContext) {
             var ctx = $.canvas.getContext('2d');
@@ -77,9 +86,9 @@ $.extend({
             var c = ($('.left-connector').width()) / 2;
             $(links).each(function (key, lnk) {
                 var xStart = lnk.fr2.offset().left + c
-                , yStart = lnk.fr2.offset().top + c
-                , xFinish = lnk.to2.offset().left + c
-                , yFinish = lnk.to2.offset().top + c;
+                    , yStart = lnk.fr2.offset().top + c
+                    , xFinish = lnk.to2.offset().left + c
+                    , yFinish = lnk.to2.offset().top + c;
 
                 $.drawLink(ctx, xStart, yStart, xFinish, yFinish);
             });
@@ -91,6 +100,10 @@ $.extend({
         } else {
             alert('You need Chrome, Safari, IE 8 or Firefox 1.5+ to work with this product.');
         }
+    },
+
+    generateScheme:function () {
+
     }
 });
 
@@ -111,8 +124,8 @@ $(document).ready(function () {
                 $.info.hide();
                 break;
             case 'right-connector':
-                $(document).mousemove(function(ev) {
-                    $.renderLinks({from:$(event.target),to:ev});
+                $(document).mousemove(function (ev) {
+                    $.renderLinks({from:$(event.target), to:ev});
                 });
                 $(document).mouseover(function (e) {
                     var start = $(event.target);
@@ -121,17 +134,15 @@ $(document).ready(function () {
                     if (finish.attr('class') == 'left-connector') {
                         if (start.attr('id') != finish.attr('id')) {
                             var weight = 1;//prompt('Set weight of the link');
-                            var id = $.Grid.links.length;
                             $.Grid.links.push({
-                                id:id,
-                                from:start.attr('id'),
-                                to:finish.attr('id'),
-                                fr2:start,
-                                to2:finish,
-                                weight:weight
+                                id:     $.Grid.links.length,
+                                from:   start.attr('id'),
+                                to:     finish.attr('id'),
+                                fr2:    start,
+                                to2:    finish,
+                                weight: weight
                             });
-                            $(document).unbind('mouseover');
-                            $(document).unbind('mousemove');
+                            $.unbind();
                             $.renderLinks();
                         }
                     }
@@ -157,16 +168,8 @@ $(document).ready(function () {
 
     $(document).mouseup(function (event) {
         var type = $(event.target).attr('class');
-
-        $(document).unbind('mouseover');
-        switch (type) {
-            case 'node':
-                $(document).unbind('mousemove');
-                break;
-            case 'right-connector':
-                $(document).unbind('mousemove');
-            default:
-            //console.log('default in mouseup');
+        if ((type == "node") || (type== "right-connector")) {
+            $.unbind();
         }
     });
 
