@@ -15,5 +15,9 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 
-SOURCES += tst_dag_node.cpp
+SOURCES += tst_dag_node.cpp \
+    ../dag_tree.cpp
+
+
+
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
