@@ -17,6 +17,10 @@ input[type=text] {
     background-color: #def5ff;
 }
 
+.grid input {
+    width: 100%;
+}
+
 #gCanvas {
     z-index: 0;
     position: absolute;
@@ -93,12 +97,12 @@ input[type=text] {
     cursor: pointer;
 }
 
-.node > .left-connector {
+.node .left-connector {
     left: -8px;
     top:60px;
 }
 
-.node > .right-connector {
+.node .right-connector {
     right:-8px;
     top:60px;
 }

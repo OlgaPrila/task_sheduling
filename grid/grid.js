@@ -160,6 +160,7 @@ $(document).ready(function () {
 
                 $.info.css({left:evnt.offset().left + 50});
                 $.info.css({top:evnt.offset().top - 30});
+                $()
                 $.info.children('#field1').val($.Grid.nodes[evnt.attr('id')].field1);
                 $.info.children('#field2').val($.Grid.nodes[evnt.attr('id')].field2);
                 break;
