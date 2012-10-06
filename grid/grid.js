@@ -28,8 +28,11 @@ $.extend({
             $.generateScheme();
         });
 
-        $.info.children('#save').click(function () {
 
+        $.info.children('#save').click(function () {
+            $.Grid.nodes[$.getinfo('#n-id')].cores = $.getinfo('#n-cores');
+            $.Grid.nodes[$.getinfo('#n-id')].operations = $.getinfo('#n-oper');
+            $.Grid.nodes[$.getinfo('#n-id')].memory = $.getinfo('#n-memory');
             $.info.hide();
         });
 
@@ -49,6 +52,10 @@ $.extend({
         $.canvas = document.getElementById('gCanvas');
         //@TODO:change 450 on gView height. Dont know why, but it does not work right now O_o
         $('#gCanvas').attr('width', $('.gView').width()).attr('height', 750);
+    },
+
+    getinfo: function(tag) {
+        return $.info.children(tag).val();
     },
 
     drawLink:function (ctx, xStart, yStart, xFinish, yFinish) {
@@ -101,7 +108,7 @@ $.extend({
                 $.drawLink(ctx, x1, y1, aditional.to.pageX, aditional.to.pageY);
             }
         } else {
-            alert('You need Chrome, Safari, IE 8 or Firefox 1.5+ to work with this product.');
+            alert('You need Chrome, Safari, IE8+ or Firefox 1.5+ to work with this product.');
         }
     },
 
