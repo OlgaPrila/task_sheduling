@@ -11,7 +11,9 @@ $.extend({
     info:null,
 
     grid_init:function () {
-        $('head').append('<link rel="stylesheet" type="text/css" href="./grid/grid.css">');
+        $('head')
+            .append('<link rel="stylesheet" type="text/css" href="./grid/grid.css">')
+            .append('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">');
         $.Grid.it = $('.grid');
         $.info = $('.info-table');
         $.canvas_init();
@@ -63,13 +65,14 @@ $.extend({
     add_node:function () {
         var newID = $('.gView > .node').length;
         $('.gView').append('<div class="node" id="' + newID + '">' +
-            '<div class="info" id="' + newID + '">i</div>' +
+            '<div class="info" id="' + newID + '">'+newID+'</div>' +
             '<div class="left-connector" id="' + newID + '"></div>' +
             '<div class="right-connector" id="' + newID + '"></div></div>');
         $.Grid.nodes.push({
             id:newID,
-            field1:'TEXT',
-            field2:Math.floor(Math.random() * 10) * newID
+            cores:'dniwe!',
+            operations:Math.floor(Math.random() * 10) * newID,
+            memory: 'polnoe dniwe!'
         });
     },
 
@@ -160,9 +163,10 @@ $(document).ready(function () {
 
                 $.info.css({left:evnt.offset().left + 50});
                 $.info.css({top:evnt.offset().top - 30});
-                $()
-                $.info.children('#field1').val($.Grid.nodes[evnt.attr('id')].field1);
-                $.info.children('#field2').val($.Grid.nodes[evnt.attr('id')].field2);
+                $.info.children('#n-id').val(evnt.attr('id'));
+                $.info.children('#n-cores').val($.Grid.nodes[evnt.attr('id')].cores);
+                $.info.children('#n-oper').val($.Grid.nodes[evnt.attr('id')].operations);
+                $.info.children('#n-memory').val($.Grid.nodes[evnt.attr('id')].memory);
                 break;
         }
     });
