@@ -24,15 +24,18 @@ public:
         _number(node._number),
         _name(node._name),
         _parameters(node._parameters),
-        _lines(node._lines),
+        _outlines(node._outlines),
+        _inlines(node._inlines),
         _level(node._level)
     {}
 
 
-    inline void add_DAG_line(const DAG_line & new_line){
-        _lines.insert(std::pair<int,DAG_line >(new_line.to(), new_line));
+    inline void add_DAG_outline(const DAG_line & new_line){
+        _outlines.insert(std::pair<int,DAG_line >(new_line.to(), new_line));
     }
-
+    inline void add_DAG_inline(const DAG_line & new_line){
+        _inlines.insert(std::pair<int,DAG_line >(new_line.from(), new_line));
+    }
     int number() const{
         return _number;
     }
@@ -45,11 +48,17 @@ public:
     const float parameter(int n) const {
         return _parameters.at(n);
     }
-    const std::map<int,DAG_line> & lines() const{
-        return _lines;
+    const std::map<int,DAG_line> & outlines() const{
+        return _outlines;
     }
-    const DAG_line & line(int n) const{
-        return _lines.at(n);
+    const DAG_line & outline(int n) const{
+        return _outlines.at(n);
+    }
+    const std::map<int,DAG_line> & inlines() const{
+        return _inlines;
+    }
+    const DAG_line & in_line(int n) const{
+        return _inlines.at(n);
     }
     int level() const{
         return _level;
@@ -65,8 +74,8 @@ private:
 
     std::string _name;
     std::vector<float> _parameters;
-    std::map<int,DAG_line> _lines;
-
+    std::map<int,DAG_line> _outlines;
+    std::map<int,DAG_line> _inlines;
     int _level;
     /*
   * another params
