@@ -75,12 +75,7 @@ $.extend({
             '<div class="info" id="' + newID + '">'+newID+'</div>' +
             '<div class="left-connector" id="' + newID + '"></div>' +
             '<div class="right-connector" id="' + newID + '"></div></div>');
-        $.Grid.nodes.push({
-            id:newID,
-            cores:'dniwe!',
-            operations:Math.floor(Math.random() * 10) * newID,
-            memory: 'polnoe dniwe!'
-        });
+        $.Grid.nodes.push({ id:newID, cores: 0, operations: 0, memory: 0 });
     },
 
     unbind:function() {
