@@ -28,11 +28,11 @@ $.extend({
             $.generateScheme();
         });
 
-
         $.info.children('#save').click(function () {
             $.Grid.nodes[$.getinfo('#n-id')].cores = $.getinfo('#n-cores');
             $.Grid.nodes[$.getinfo('#n-id')].operations = $.getinfo('#n-oper');
             $.Grid.nodes[$.getinfo('#n-id')].memory = $.getinfo('#n-memory');
+            $.Grid.nodes[$.getinfo('#n-id')].tips = $.getinfo('#tips');
             $.info.hide();
         });
 
@@ -59,6 +59,7 @@ $.extend({
     },
 
     drawLink:function (ctx, xStart, yStart, xFinish, yFinish) {
+
         ctx.lineWidth = 6;
         ctx.strokeStyle = "#070";
         ctx.beginPath();
@@ -66,6 +67,7 @@ $.extend({
         ctx.bezierCurveTo(xStart + ( xFinish - xStart) / 2, yStart,
             xFinish - ( xFinish - xStart) / 2, yFinish,
             xFinish, yFinish);
+
         ctx.stroke();
     },
 
@@ -75,7 +77,7 @@ $.extend({
             '<div class="info" id="' + newID + '">'+newID+'</div>' +
             '<div class="left-connector" id="' + newID + '"></div>' +
             '<div class="right-connector" id="' + newID + '"></div></div>');
-        $.Grid.nodes.push({ id:newID, cores: 0, operations: 0, memory: 0 });
+        $.Grid.nodes.push({ id:newID, cores: 0, operations: 0, memory: 0, tips: '' });
     },
 
     unbind:function() {
@@ -169,6 +171,7 @@ $(document).ready(function () {
                 $.info.children('#n-cores').val($.Grid.nodes[evnt.attr('id')].cores);
                 $.info.children('#n-oper').val($.Grid.nodes[evnt.attr('id')].operations);
                 $.info.children('#n-memory').val($.Grid.nodes[evnt.attr('id')].memory);
+                $.info.children('#tips').val($.Grid.nodes[evnt.attr('id')].tips);
                 break;
         }
     });
