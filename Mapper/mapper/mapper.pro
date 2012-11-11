@@ -1,13 +1,21 @@
 TEMPLATE = app
 CONFIG += console testlib
-CONFIG -= qt
+#CONFIG -= qt
 
-SOURCES += main.cpp \
-    dag_tree.cpp
+SOURCES += \
+    configurator.cpp \
+    result.cpp \
+    main.cpp
 
 HEADERS += \
-    dag_node.h \
-    dag_line.h \
-    dag_tree.h
+    configurator.h \
+    abstractalgorithm.h \
+    abstractparser.h \
+    graph.h \
+    abstractresultprinter.h \
+    result.h \
+    abstractscanner.h
 
 SUBDIRS += test
+
+LIBS += -lboost_graph
