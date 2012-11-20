@@ -14,6 +14,7 @@ $.extend({
         $('head')
             .append('<link rel="stylesheet" type="text/css" href="./grid/grid.css">')
             .append('<meta http-equiv="Content-Type" content="text/html; charset=utf-8">');
+
         $.Grid.it = $('.grid');
         $.info = $('.info-table');
         $.canvas_init();
@@ -50,8 +51,7 @@ $.extend({
 
     canvas_init:function () {
         $.canvas = document.getElementById('gCanvas');
-        //@TODO:change 450 on gView height. Dont know why, but it does not work right now O_o
-        $('#gCanvas').attr('width', $('.gView').width()).attr('height', 750);
+        $('#gCanvas').attr('width', $('.gView').width()).attr('height', $(window).height());
     },
 
     getinfo: function(tag) {
@@ -59,7 +59,6 @@ $.extend({
     },
 
     drawLink:function (ctx, xStart, yStart, xFinish, yFinish) {
-
         ctx.lineWidth = 6;
         ctx.strokeStyle = "#070";
         ctx.beginPath();
@@ -107,10 +106,6 @@ $.extend({
         } else {
             alert('You need Chrome, Safari, IE8+ or Firefox 1.5+ to work with this product.');
         }
-    },
-
-    generateScheme:function () {
-
     }
 });
 
@@ -182,5 +177,4 @@ $(document).ready(function () {
             $.unbind();
         }
     });
-
 });
