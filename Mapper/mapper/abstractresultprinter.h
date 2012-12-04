@@ -2,17 +2,17 @@
 #define ABSTRACTRESULTPRINTER_H
 
 
-#include <fstream>
-
 #include "result.h"
 
 
 class AbstractResultPrinter
 {
 public:
+    AbstractResultPrinter(){}
+    virtual ~AbstractResultPrinter(){}
+//    сохраняем результат работы алгоритма
+//    куда сохранять, знает конфигуратор
     virtual bool printResult (const Result & result);
-    virtual const std::vector<std::string> & errors();
-    virtual ~AbstractResultPrinter();
 };
 
 #endif // ABSTRACTRESULTPRINTER_H

@@ -1,14 +1,8 @@
 #ifndef RESULT_H
 #define RESULT_H
 
-class Result
-{
-public:
-    Result();
+#include <vector>
 
-    float weight;
-private:
-
-};
+typedef std::vector<std::pair<float, float> > Result;
 
 #endif // RESULT_H

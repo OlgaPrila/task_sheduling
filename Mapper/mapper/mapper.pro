@@ -3,9 +3,14 @@ CONFIG += console testlib
 #CONFIG -= qt
 
 SOURCES += \
+    abstractresultprinter.cpp \
     configurator.cpp \
-    result.cpp \
-    main.cpp
+    main.cpp \
+    nullparser.cpp \
+    nullscanner.cpp \
+    algorithm.cpp \
+    graphprinter.cpp
+
 
 HEADERS += \
     configurator.h \
@@ -14,7 +19,11 @@ HEADERS += \
     graph.h \
     abstractresultprinter.h \
     result.h \
-    abstractscanner.h
+    abstractscanner.h \
+    nullparser.h \
+    nullscanner.h \
+    algorithm.h \
+    graphprinter.h
 
 SUBDIRS += test
 

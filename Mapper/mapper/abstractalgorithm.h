@@ -11,10 +11,13 @@
 class AbstractAlgorithm
 {
 public:
+    AbstractAlgorithm(){}
+    virtual ~AbstractAlgorithm(){}
+    //
+    virtual bool process( Graph * task,
+                          Graph * grid,
+                          Result & result) = 0;
 
-    virtual bool process(const Graph & task, const Graph & grid, Result & result) = 0;
-    virtual const std::vector<std::string> & errors();
-    virtual ~AbstractAlgorithm();
 };
 
 #endif // ABSTRACTALGORITHM_H
