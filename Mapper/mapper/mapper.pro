@@ -28,3 +28,5 @@ HEADERS += \
 SUBDIRS += test
 
 LIBS += -lboost_graph
+
+QMAKE_CXXFLAGS += -Wformat

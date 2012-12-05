@@ -32,7 +32,9 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
 
     int taskSize = task->m_vertex_set.size();
     int gridSize = grid->m_vertex_set.size();
+
     levels.resize(taskSize);
+    //    инициализируем набор уровней
     int maxLevel =-1;
     for (Graph::vertex_iterator vertexIterator=task->m_vertex_set.begin();
          vertexIterator != task->m_vertex_set.end();
@@ -44,22 +46,26 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
         }
     }
     levels.resize(maxLevel+1);
-    for (int i= 0;i<levels.size(); ++i){
+
+    for (unsigned int i= 0;i<levels.size(); ++i){
         qDebug("levels[%d]=%d",i,levels.at(i));
     }
 
     Selection previousSelection;
     NodesAndWeights previousSelectionWeights;
-    for (int level= 0; level < maxLevel; ++level ){
+
+    // main loop
+    for (int level= 0; level < maxLevel +1; ++level ){
         Selection currentSelection;
         FillSelectionWithLevel(currentSelection,level);
-        if (currentSelection.size()!=levels[level]){
+        if (currentSelection.size() != levels[level]){
             qDebug("какая то лажа ");
             abort();
         }
         ManyCombinations currentCombs;
         CreateCombinations(currentCombs,currentSelection);
         NodesAndWeights currentWeights;
+        InitNodesAndWeights(currentSelection,currentWeights);
         CalculateWeights(currentCombs,currentWeights,previousSelectionWeights);
 
         printWeights(currentWeights);
@@ -69,8 +75,9 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
 
     }
 
-    Result ret;
-    float max = -1;
+//    Result ret;
+//    float max = -1;
+    // как то определить найлучший результат
     //     for (Selection::const_iterator i = previousSelection.begin();
     //          i!=previousSelectionWeights.end(); ++i){
 
@@ -81,6 +88,40 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
 }
 
 
+
+//does not work
+void Algorithm::CalculateWeights(ManyCombinations &comb, NodesAndWeights &weights, const NodesAndWeights &prevSet){
+    if (prevSet.empty()){
+        return;
+    }
+
+    // if not empty - try to calc weights for links
+}
+
+
+
+void Algorithm::InitNodesAndWeights(const Selection & selection ,NodesAndWeights &weights){
+    weights.clear();
+    Result nullResult( task->m_vertex_set.size(),Graph::null_vertex());
+    Solution nullSolution(nullResult, 0.0f);
+    ClusterWeights nullCluster( grid->m_vertex_set.size(),nullSolution);
+    weights.resize( task->m_vertex_set.size(), nullCluster );
+    for (Selection::const_iterator i = selection.begin(); i!= selection.end(); ++i){
+        Graph::vertex_descriptor node= *i;
+        ClusterWeights cluster(grid->m_vertex_set.size(),nullSolution) ;
+        for ( Graph::vertex_iterator g = grid->m_vertex_set.begin();
+              g != grid->m_vertex_set.end(); ++g ){
+
+            cluster[node].first.at(node) =  (*g);
+            cluster[node].second = weight( (*task)[node].parameters(),
+                                      (*grid)[*g].parameters() );
+
+        }
+        weights.at(node)=cluster;
+    }
+}
+
+//работает
 void Algorithm::FillSelectionWithLevel(Selection &select, int level){
     for (Graph::vertex_iterator vertexIterator=this->task->m_vertex_set.begin();
          vertexIterator != this->task->m_vertex_set.end();
@@ -91,63 +132,67 @@ void Algorithm::FillSelectionWithLevel(Selection &select, int level){
         }
     }
 }
-
-void  Algorithm::CreateCombinations(ManyCombinations &comb, Selection &curr){
-    if (curr.size() > grid->m_vertex_set.size()){
+//работает
+void  Algorithm::CreateCombinations(ManyCombinations &comb, const Selection &curr){
+    if (curr.size() > (unsigned int) grid->m_vertex_set.size() ){
         qDebug("какая то лажа ");
         abort();
     }
     ManySubsets subsets;
+    // возвращает все к-подмножества
     GetAllKSubsetsGrid(subsets,curr.size());
+
     for (ManySubsets::iterator j = subsets.begin(); j!= subsets.end(); ++j){
-        qDebug( "Begin combo");
-        NodeClusterCombination combination;
         Subset ss = *j;
-        if (curr.size() != ss.size()){
-            qDebug("какая то лажа ");
-            abort();
-        }
-        Selection::iterator selectionIter = curr.begin();
-        Subset::iterator subsetIter = ss.begin();
-        for (int i = 0; i< curr.size();i++){
-            NodeClusterPair pair(*selectionIter,*subsetIter);
-            ++selectionIter;
-            ++subsetIter;
-            qDebug("Pair %d , %d", pair.first, pair.second );
-            combination.push_back(pair);
-        }
-        qDebug( "End combo");
-        comb.push_back(combination);
+        //        для каждой допустимой перестановки к-подмножества создаем комбинацию
+        do {
+            NodeClusterCombination combination;
+            qDebug( "Begin combo");
+
+            if (curr.size() != ss.size()){
+                qDebug("какая то лажа ");
+                abort();
+            }
+
+            Selection::const_iterator selectionIter = curr.begin();
+            Subset::iterator subsetIter = ss.begin();
+            for (unsigned int i = 0; i< curr.size();i++){
+                NodeClusterPair pair(*selectionIter,*subsetIter);
+                ++selectionIter;
+                ++subsetIter;
+                qDebug("Pair %ld , %ld", pair.first, pair.second );
+                combination.push_back(pair);
+            }
+
+            qDebug( "End combo");
+            comb.push_back(combination);
+        }   while(next_permutation(ss.begin(), ss.end()));
     }
-    qDebug("Combinations count %d", comb.size());
+    qDebug("Combinations count %ld", comb.size());
 }
 
-
-
-void Algorithm::CalculateWeights(ManyCombinations &comb, NodesAndWeights &weights, const NodesAndWeights &prevSet){
-
-}
-
-void Algorithm::printWeights(NodesAndWeights &weights){
-    qDebug("printWeights");
-    for (NodesAndWeights::iterator i=weights.begin(); i!= weights.end(); ++i ){
-        QString str = "Node "+ QString::number((*i).first) + ":";
-        for(ClusterWeights::const_iterator j = (*i).second.begin(); j!=(*i).second.end();++j){
-            QString str2 = "(for " +QString::number((*j).first) + "weight=" ;
-            Solution s = (*j).second;
+//работает но  выводит только вес
+void Algorithm::printWeights(const NodesAndWeights &weights){
+    qDebug("printWeights %ld", weights.size());
+    for (unsigned int i=0; i!= weights.size(); ++i ){
+        QString str = "Node "+ QString::number(i) + ":";
+        for(unsigned int j = 0; j != weights.at(i).size(); ++j){
+            QString str2 = "(for node " +QString::number(j) + " weight=" ;
+            Solution s = weights.at(i).at(j);
             str2.append(QString::number(s.second));
             str2.append("); ");
+            str.append(str2);
         }
         qDebug() << str;
     }
 }
-
+//работает
 void Algorithm::GetAllSubsets(ManySubsets &comb,const Selection & s){
     for (int i = 0; i < pow(2,s.size()) +1; ++i){
         Subset ss;
-        for (int j=1; j < s.size(); ++j){
+        for (unsigned int j=1; j < s.size(); ++j){
             int k = 1 << j;
-            if (i & k != 0){
+            if ( (i & k) != 0){
                 ss.push_back(s[j]);
             }
         }
@@ -155,7 +200,7 @@ void Algorithm::GetAllSubsets(ManySubsets &comb,const Selection & s){
     }
 }
 
-
+// работает
 // только до К =5 , при условии что в гриде не больше 5 вершин.
 void Algorithm::GetAllKSubsetsGrid(ManySubsets &subsets, int K){
     //    только до 2 в  5
@@ -171,20 +216,26 @@ void Algorithm::GetAllKSubsetsGrid(ManySubsets &subsets, int K){
         qDebug("какая то лажа ");
         abort();
     }
-    for (int j=0; j < grid->m_vertex_set.size(); ++j){
+    int size = grid->m_vertex_set.size();
+    // с единицы потому что первый элемент массива количество
+    for (int magicIndex = 1; magicIndex <  magic[K][0]+1; ++magicIndex){
         Subset ss;
-        for (int i = 0; i < magic[K][0]; ++i){
-            int k = 1 << j;
-            int z = magic[K][i +1];
-            if (z & k != 0){
-                ss.push_back(grid->m_vertex_set[j]);
+        int magicNumber = magic[K][magicIndex];
+        int max = pow(2,size) -1; // max allowed
+        if (magicNumber > max) {
+            continue;
+        }
+        for (int i =0; i< size; i++ ){
+            int k = 1 << i;
+            int result = magicNumber & k ;
+            if (result != 0){
+                ss.push_back(grid->m_vertex_set[i]);
             }
-
         }
         subsets.push_back(ss);
-        qDebug ("K = %d, i = %d, size = %d ",K,j,ss.size());
+        qDebug ("K = %d, index = %d, magic number = %d, size = %ld",K,magicIndex,magic[K][magicIndex],ss.size());
     }
-    qDebug("K = %d, size = %d",K,subsets.size());
+    qDebug("K = %d, size = %ld",K,subsets.size());
 }
 
 float Algorithm::weight(vector<float> a, vector<float> b){

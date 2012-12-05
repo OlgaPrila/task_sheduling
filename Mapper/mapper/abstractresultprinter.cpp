@@ -12,8 +12,8 @@ bool AbstractResultPrinter::printResult(const Result &result){
      //Configurator::instance().errors().push_back("Not implemeted printing yet");
     cout << "Result for filename: " <<
             Configurator::instance().getTaskFilename() << endl;
-    for (Result::const_iterator i = result.begin(); i!= result.end(); ++i){
-        cout << (*i).first << "\t" << (*i).second << endl;
+    for (unsigned int i=0; i< result.size(); ++i){
+        cout << i << ":" << result.at(i);
     }
     cout << endl;
     return true;

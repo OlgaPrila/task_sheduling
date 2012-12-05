@@ -13,9 +13,9 @@ class Algorithm : public AbstractAlgorithm
     typedef std::pair<Result,float>   Solution;
     // array of weights of node - cluster pairs
     // one node -all clusters
-    typedef std::map<Graph::vertex_descriptor,Solution>  ClusterWeights;
+    typedef std::vector<Solution>  ClusterWeights;
     //weights of all
-    typedef std::map<Graph::vertex_descriptor,ClusterWeights> NodesAndWeights;
+    typedef std::vector<ClusterWeights> NodesAndWeights;
 
     typedef std::vector<Graph::vertex_descriptor> Selection;
 
@@ -35,16 +35,17 @@ public:
                           Graph * _grid, Result & _result);
 private:
     void FillSelectionWithLevel(Selection & select, int level);
-    void CreateCombinations (ManyCombinations & comb, Selection & curr);
+    void CreateCombinations (ManyCombinations & comb, const Selection & curr);
     void GetAllSubsets(ManySubsets &comb, const Selection &s);
     void CalculateWeights (ManyCombinations & comb, NodesAndWeights & weights, const NodesAndWeights & prevSet);
-    void printWeights(NodesAndWeights& weights);
-
+    void printWeights(const NodesAndWeights& weights);
+    void CalculateOnlyNodesWeights(const ManyCombinations &comb, NodesAndWeights &weights);
+    void InitNodesAndWeights (const Selection & selection, NodesAndWeights & weights);
     void GetAllKSubsetsGrid(ManySubsets &comb, int K);
     float weight(std::vector <float> a, std::vector<float> b);
     Graph* task;
     Graph* grid;
-    std::vector<int> levels;
+    std::vector<unsigned int> levels;
     int maxLevel;
 };
 
