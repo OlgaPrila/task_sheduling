@@ -28,6 +28,8 @@ class Algorithm : public AbstractAlgorithm
     typedef std::vector<Subset> ManySubsets;
 
 
+    typedef std::vector<Graph::edge_descriptor> Edges;
+
 public:
     Algorithm(){}
     virtual ~Algorithm(){}
@@ -43,6 +45,7 @@ private:
     void InitNodesAndWeights (const Selection & selection, NodesAndWeights & weights);
     void GetAllKSubsetsGrid(ManySubsets &comb, int K);
     float weight(std::vector <float> a, std::vector<float> b);
+    void GetAllInEdgesTask(Edges e, Graph::vertex_descriptor v);
     Graph* task;
     Graph* grid;
     std::vector<unsigned int> levels;

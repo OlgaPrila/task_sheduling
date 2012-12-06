@@ -94,11 +94,57 @@ void Algorithm::CalculateWeights(ManyCombinations &comb, NodesAndWeights &weight
     if (prevSet.empty()){
         return;
     }
+    // создаем вектор весов количеством гридсайз
+
+//    NodesAndWeights
 
     // if not empty - try to calc weights for links
+    for (ManyCombinations::const_iterator allIter = comb.begin(); allIter != comb.end(); ++allIter){
+
+        const NodeClusterCombination & c = *allIter;
+        for (NodeClusterCombination::const_iterator one= c.begin(); one!= c.end(); ++one){
+            const NodeClusterPair & par =*one;
+
+            Edges edges;
+            float lineWeightSum = 0;
+           GetAllInEdgesTask(edges,par.first);
+           for (Edges::iterator e = edges.begin(); e!= edges.end(); ++e){
+               Graph::vertex_descriptor v = source(*e,*task);
+               float prevNodeWeight = 0;
+               Graph::vertex_descriptor prevNodeCluster = -1;
+                // тут надо посчитать ГридСайз вариантов для одного узла
+
+//               float weightConnection = weight((*task)[]
+           }
+            // need to take every possible pair of this combination and their previous
+//            мерджим, и записываем в вектор весов по индексу второго элемента
+            // need to calculate every possible pair weight
+
+//            ага
+
+        }// one combination loop
+
+    }// all combinations loop
+
+    // here we must have all combinations, also we must save them all.
+//    отсеиваем
 }
 
+void Algorithm::GetAllInEdgesTask(Edges e, Graph::vertex_descriptor v){
+//   std::pair<Graph::in_edge_iterator, Graph::in_edge_iterator> p;
+//   in_edges(v,*task);
+//   while( p.first != p.second){
+//       e.push_back( *(p.first++) );
+//   }
+    for (Graph::vertex_iterator u = task->m_vertex_set.begin(); u!= task->m_vertex_set.end(); ++u){
+        std::pair<Graph::edge_descriptor, bool> p = edge(*u,v,*task);
+        if(p.second){
+            e.push_back(p.first);
+        }
 
+    }
+    qDebug("in-edge size for v%ld =%ld ",v,e.size());
+}
 
 void Algorithm::InitNodesAndWeights(const Selection & selection ,NodesAndWeights &weights){
     weights.clear();
@@ -112,9 +158,11 @@ void Algorithm::InitNodesAndWeights(const Selection & selection ,NodesAndWeights
         for ( Graph::vertex_iterator g = grid->m_vertex_set.begin();
               g != grid->m_vertex_set.end(); ++g ){
 
-            cluster[node].first.at(node) =  (*g);
-            cluster[node].second = weight( (*task)[node].parameters(),
-                                      (*grid)[*g].parameters() );
+            float we = weight( (*task)[node].parameters(),
+                                   (*grid)[*g].parameters() );
+            cluster[*g].first.at(node) =  (*g);
+            cluster[*g].second = we;
+
 
         }
         weights.at(node)=cluster;
@@ -147,7 +195,7 @@ void  Algorithm::CreateCombinations(ManyCombinations &comb, const Selection &cur
         //        для каждой допустимой перестановки к-подмножества создаем комбинацию
         do {
             NodeClusterCombination combination;
-            qDebug( "Begin combo");
+//            qDebug( "Begin combo");
 
             if (curr.size() != ss.size()){
                 qDebug("какая то лажа ");
@@ -160,11 +208,11 @@ void  Algorithm::CreateCombinations(ManyCombinations &comb, const Selection &cur
                 NodeClusterPair pair(*selectionIter,*subsetIter);
                 ++selectionIter;
                 ++subsetIter;
-                qDebug("Pair %ld , %ld", pair.first, pair.second );
+//                qDebug("Pair %ld , %ld", pair.first, pair.second );
                 combination.push_back(pair);
             }
 
-            qDebug( "End combo");
+//            qDebug( "End combo");
             comb.push_back(combination);
         }   while(next_permutation(ss.begin(), ss.end()));
     }
@@ -177,9 +225,22 @@ void Algorithm::printWeights(const NodesAndWeights &weights){
     for (unsigned int i=0; i!= weights.size(); ++i ){
         QString str = "Node "+ QString::number(i) + ":";
         for(unsigned int j = 0; j != weights.at(i).size(); ++j){
-            QString str2 = "(for node " +QString::number(j) + " weight=" ;
+            QString str2 = "(n=" +QString::number(j) + " w=" ;
             Solution s = weights.at(i).at(j);
             str2.append(QString::number(s.second));
+                str2.append("; ");
+            for (unsigned int k =0; k< s.first.size(); k++){
+                str2.append("(");
+                str2.append(QString::number(k));
+                str2.append(",");
+                if (s.first.at(k) > (unsigned int) grid->m_vertex_set.size()){
+                    str2.append("-1");
+                }else {
+                    str2.append( QString::number(s.first.at(k)));
+                }
+//                str2.append("; ");
+                str2.append(")");
+            }
             str2.append("); ");
             str.append(str2);
         }
@@ -233,9 +294,9 @@ void Algorithm::GetAllKSubsetsGrid(ManySubsets &subsets, int K){
             }
         }
         subsets.push_back(ss);
-        qDebug ("K = %d, index = %d, magic number = %d, size = %ld",K,magicIndex,magic[K][magicIndex],ss.size());
+//     ?   qDebug ("K = %d, index = %d, magic number = %d, size = %ld",K,magicIndex,magic[K][magicIndex],ss.size());
     }
-    qDebug("K = %d, size = %ld",K,subsets.size());
+//    qDebug("K = %d, size = %ld",K,subsets.size());
 }
 
 float Algorithm::weight(vector<float> a, vector<float> b){

@@ -1,12 +1,12 @@
 #include "nullparser.h"
-
+#include <QDebug>
 
 using namespace boost;
 
 
 bool NullParser::parse(PGraph &result){
 
-
+//    BOOST_CONCEPT_ASSERT(( IncidenceGraphConcept<Graph> ));
 //    Configurator::instance().errors().push_back("Not implemeted parsing yet");
 
    result = new Graph(4);
@@ -37,11 +37,20 @@ bool NullParser::parse(PGraph &result){
 
     Graph::edge_descriptor line =  add_edge(0,1,*result).first;
     (*result)[line].push_back(100.0f);
-    line = add_edge(0,2,*result).first;
+    line = add_edge(0,result->m_vertex_set[2],*result).first;
     (*result)[line].push_back(10.0f);
     line = add_edge(1,3,*result).first;
     (*result)[line].push_back(200.0f);
-    line = add_edge(2,3,*result).first;
+    line = add_edge(result->m_vertex_set[2],result->m_vertex_set[3],*result).first;
     (*result)[line].push_back(50.0f);
+
+    std::pair<Graph::in_edge_iterator, Graph::in_edge_iterator> p;
+    in_edges(result->m_vertex_set[3],*result);
+   int i=0;
+    while( p.first != p.second){
+        i++;
+        p.first++;
+    }
+    qDebug("%d",i);
     return true;
 }
