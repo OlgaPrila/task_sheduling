@@ -3,7 +3,7 @@
 #include "algorithm.h"
 #include "nullparser.h"
 #include "nullscanner.h"
-
+#include "nullparser2.h"
  Configurator::~Configurator(){
      // освобождаем все что тольуо можем
      delete algorithm;
@@ -21,9 +21,17 @@ bool Configurator::parseCLI(int argc, char **argv){
      if (! algorithm){
          algorithm = new Algorithm();
      }
+#define TWO
+#ifdef TWO
+     if (! parser){
+         parser = new NullParser2();
+     }
+
+#else
      if (! parser){
          parser = new NullParser();
      }
+ #endif
      if (! scanner){
          scanner = new NullScanner();
      }

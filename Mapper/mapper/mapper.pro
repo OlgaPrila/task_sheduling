@@ -9,7 +9,8 @@ SOURCES += \
     nullparser.cpp \
     nullscanner.cpp \
     algorithm.cpp \
-    graphprinter.cpp
+    graphprinter.cpp \
+    nullparser2.cpp
 
 
 HEADERS += \
@@ -23,7 +24,8 @@ HEADERS += \
     nullparser.h \
     nullscanner.h \
     algorithm.h \
-    graphprinter.h
+    graphprinter.h \
+    nullparser2.h
 
 SUBDIRS += test
 

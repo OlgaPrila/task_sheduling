@@ -6,6 +6,8 @@
 #include <map>
 #include <set>
 
+#include <QString>
+
 class Algorithm : public AbstractAlgorithm
 {
     // result -array of pairs
@@ -24,6 +26,10 @@ class Algorithm : public AbstractAlgorithm
     typedef std::pair<Graph::vertex_descriptor, Graph::vertex_descriptor> NodeClusterPair;
     typedef std::vector<NodeClusterPair> NodeClusterCombination;
     typedef std::vector<NodeClusterCombination > ManyCombinations;
+
+    typedef std::pair<NodeClusterCombination, Solution> WeightedCombination;
+    typedef std::vector<WeightedCombination> ManyWeightedCombinations;
+
     typedef std::vector<Graph::vertex_descriptor> Subset;
     typedef std::vector<Subset> ManySubsets;
 
@@ -39,15 +45,20 @@ private:
     void FillSelectionWithLevel(Selection & select, int level);
     void CreateCombinations (ManyCombinations & comb, const Selection & curr);
     void GetAllSubsets(ManySubsets &comb, const Selection &s);
-    void CalculateWeights (ManyCombinations & comb, NodesAndWeights & weights, const NodesAndWeights & prevSet);
+    void CalculateWeights(ManyWeightedCombinations &cur, const ManyWeightedCombinations &prev);
     void printWeights(const NodesAndWeights& weights);
-    void CalculateOnlyNodesWeights(const ManyCombinations &comb, NodesAndWeights &weights);
-    void InitNodesAndWeights (const Selection & selection, NodesAndWeights & weights);
+    void printWeightedCombinations( const ManyWeightedCombinations &s);
+    QString CombinationToQString(const NodeClusterCombination &c);
+//    void CalculateOnlyNodesWeights(const ManyCombinations &comb, NodesAndWeights &weights);
+    void InitWeights (const ManyCombinations &selection, ManyWeightedCombinations & weights);
     void GetAllKSubsetsGrid(ManySubsets &comb, int K);
     float weight(std::vector <float> a, std::vector<float> b);
-    void GetAllInEdgesTask(Edges e, Graph::vertex_descriptor v);
+    void GetAllInEdgesTask(Edges &e, Graph::vertex_descriptor v);
     Graph* task;
     Graph* grid;
+
+    int taskSize;
+    int gridSize;
     std::vector<unsigned int> levels;
     int maxLevel;
 };
