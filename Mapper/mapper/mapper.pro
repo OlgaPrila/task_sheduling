@@ -10,7 +10,8 @@ SOURCES += \
     nullscanner.cpp \
     algorithm.cpp \
     graphprinter.cpp \
-    nullparser2.cpp
+    nullparser2.cpp \
+    timebasedalgorithm.cpp
 
 
 HEADERS += \
@@ -25,7 +26,8 @@ HEADERS += \
     nullscanner.h \
     algorithm.h \
     graphprinter.h \
-    nullparser2.h
+    nullparser2.h \
+    timebasedalgorithm.h
 
 SUBDIRS += test
 

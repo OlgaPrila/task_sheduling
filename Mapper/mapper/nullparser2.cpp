@@ -35,7 +35,8 @@ bool NullParser2::parse(PGraph &result){
 
     //line initialization
 
-    Graph::edge_descriptor line =  add_edge(0,2,*result).first;
+    Graph::edge_descriptor line ;
+    line = add_edge(0,2,*result).first;
     (*result)[line].push_back(1.0f);
     line = add_edge(0,3,*result).first;
     (*result)[line].push_back(1.0f);

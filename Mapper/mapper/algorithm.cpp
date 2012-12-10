@@ -58,7 +58,7 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
     ManyWeightedCombinations previousResults;
     // main loop
     for (int level= 0; level < maxLevel +1; ++level ){
-        Selection currentSelection;
+        Nodes currentSelection;
         FillSelectionWithLevel(currentSelection,level);
         if (currentSelection.size() != levels[level]){
             qDebug("какая то лажа ");
@@ -92,9 +92,25 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
     return true;
 }
 
+float Algorithm::LineWeight(const NodeClusterPair & src,const NodeClusterPair& dst){
+    float ret = 0;
+    if (src.second == dst.second){
+        // the cost of moving data from here to here is nothing
+        ret = 0;
+    }
+    std::pair<Graph::edge_descriptor, bool> taskLine = edge(src.first,dst.first,*task);
+    std::pair<Graph::edge_descriptor, bool> gridLine = edge(src.second,dst.second,*grid);
+    if (gridLine.second && taskLine.second)
+    {
+        ret = weight((*task)[taskLine.first],(*grid)[gridLine.first]);
+    }
+    return ret;
+}
 
 
-//does not work
+
+
+//works
 void Algorithm::CalculateWeights(ManyWeightedCombinations &cur, const ManyWeightedCombinations &prev){
     if (prev.empty()){
         return;
@@ -114,33 +130,22 @@ void Algorithm::CalculateWeights(ManyWeightedCombinations &cur, const ManyWeight
             {
                 WeightedCombination prevPair = *prevIter;
                 Solution thisTry = prevPair.second;
-                foreach (const NodeClusterPair &p, comb){
+                foreach (const NodeClusterPair &dst, comb){
                     Edges edges;
-                    GetAllInEdgesTask(edges,p.first);
+                    GetAllInEdgesTask(edges,dst.first);
                     foreach (Graph::edge_descriptor e, edges)
                     {
                         Graph::vertex_descriptor srcTask = source(e,*task);
                         Graph::vertex_descriptor srcGrid = thisTry.first.at(srcTask);
-                        Graph::vertex_descriptor dstTask = p.first;
-                        Graph::vertex_descriptor dstGrid = p.second;
-                        Graph::edge_descriptor taskLine = e;
-                        if (srcGrid == dstGrid){
-                            // the cost of moving data from here to here is nothing
-                            thisTry.second += 0;
-                            continue;
-                        }
-                        std::pair<Graph::edge_descriptor, bool> gridLine = edge(srcGrid,dstGrid,*grid);
-                        if (gridLine.second)
-                        {
-                            float w = weight((*task)[taskLine],(*grid)[gridLine.first]);
-                            thisTry.second+=w;
-                        }
+                        NodeClusterPair src(srcTask,srcGrid);
+                        float w = LineWeight(src,dst);
+                        thisTry.second += w;
                                 //                        qDebug("Line from %ld on %ld to %ld on %ld", srcTask, srcGrid,dstTask,dstGrid);
 
                     }
                     // put the pair in the result
-                    thisTry.first.at(p.first)=p.second;
-                    thisTry.second += weight((*task)[p.first].parameters(),(*grid)[p.second].parameters());
+                    thisTry.first.at(dst.first)=dst.second;
+                    thisTry.second += weight((*task)[dst.first].parameters(),(*grid)[dst.second].parameters());
                 }
                 qDebug("%2.3f", thisTry.second);
                 solutions.push_back(thisTry);
@@ -156,7 +161,7 @@ void Algorithm::CalculateWeights(ManyWeightedCombinations &cur, const ManyWeight
                     max = s.second;
                 }
             }
-            qDebug("%2.3f",(*weightedPair).second.second);
+            qDebug("Result weight = %2.3f",(*weightedPair).second.second);
             qDebug(" ");
     } // current loop
 }
@@ -217,7 +222,7 @@ void Algorithm::InitWeights(const ManyCombinations & combinations ,ManyWeightedC
 }
 
 //работает
-void Algorithm::FillSelectionWithLevel(Selection &select, int level){
+void Algorithm::FillSelectionWithLevel(Nodes &select, int level){
     for (Graph::vertex_iterator vertexIterator=this->task->m_vertex_set.begin();
          vertexIterator != this->task->m_vertex_set.end();
          ++ vertexIterator){
@@ -228,7 +233,7 @@ void Algorithm::FillSelectionWithLevel(Selection &select, int level){
     }
 }
 //работает
-void  Algorithm::CreateCombinations(ManyCombinations &comb, const Selection &curr){
+void  Algorithm::CreateCombinations(ManyCombinations &comb, const Nodes &curr){
     if (curr.size() > (unsigned int) gridSize ){
         qDebug("какая то лажа ");
         abort();
@@ -249,7 +254,7 @@ void  Algorithm::CreateCombinations(ManyCombinations &comb, const Selection &cur
                 abort();
             }
 
-            Selection::const_iterator selectionIter = curr.begin();
+            Nodes::const_iterator selectionIter = curr.begin();
             Subset::iterator subsetIter = ss.begin();
             for (unsigned int i = 0; i< curr.size();i++){
                 NodeClusterPair pair(*selectionIter,*subsetIter);
@@ -267,33 +272,33 @@ void  Algorithm::CreateCombinations(ManyCombinations &comb, const Selection &cur
 }
 
 //работает но  выводит только вес
-void Algorithm::printWeights(const NodesAndWeights &weights){
-    qDebug("printWeights %ld", weights.size());
-    for (unsigned int i=0; i!= weights.size(); ++i ){
-        QString str = "Node "+ QString::number(i) + ":";
-        for(unsigned int j = 0; j != weights.at(i).size(); ++j){
-            QString str2 = "(n=" +QString::number(j) + " w=" ;
-            Solution s = weights.at(i).at(j);
-            str2.append(QString::number(s.second));
-            str2.append("; ");
-            for (unsigned int k =0; k< s.first.size(); k++){
-                str2.append("(");
-                str2.append(QString::number(k));
-                str2.append(",");
-                if (s.first.at(k) > (unsigned int) grid->m_vertex_set.size()){
-                    str2.append("-1");
-                }else {
-                    str2.append( QString::number(s.first.at(k)));
-                }
-                //                str2.append("; ");
-                str2.append(")");
-            }
-            str2.append("); ");
-            str.append(str2);
-        }
-        qDebug() << str;
-    }
-}
+//void Algorithm::printWeights(const NodesAndWeights &weights){
+//    qDebug("printWeights %ld", weights.size());
+//    for (unsigned int i=0; i!= weights.size(); ++i ){
+//        QString str = "Node "+ QString::number(i) + ":";
+//        for(unsigned int j = 0; j != weights.at(i).size(); ++j){
+//            QString str2 = "(n=" +QString::number(j) + " w=" ;
+//            Solution s = weights.at(i).at(j);
+//            str2.append(QString::number(s.second));
+//            str2.append("; ");
+//            for (unsigned int k =0; k< s.first.size(); k++){
+//                str2.append("(");
+//                str2.append(QString::number(k));
+//                str2.append(",");
+//                if (s.first.at(k) > (unsigned int) grid->m_vertex_set.size()){
+//                    str2.append("-1");
+//                }else {
+//                    str2.append( QString::number(s.first.at(k)));
+//                }
+//                //                str2.append("; ");
+//                str2.append(")");
+//            }
+//            str2.append("); ");
+//            str.append(str2);
+//        }
+//        qDebug() << str;
+//    }
+//}
 
 
 void Algorithm::printWeightedCombinations(const ManyWeightedCombinations & s){
@@ -339,7 +344,7 @@ QString  Algorithm::CombinationToQString(const NodeClusterCombination &c){
 }
 
 //работает
-void Algorithm::GetAllSubsets(ManySubsets &comb,const Selection & s){
+void Algorithm::GetAllSubsets(ManySubsets &comb,const Nodes & s){
     for (int i = 0; i < pow(2,s.size()) +1; ++i){
         Subset ss;
         for (unsigned int j=1; j < s.size(); ++j){

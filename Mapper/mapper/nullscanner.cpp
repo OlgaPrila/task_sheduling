@@ -1,23 +1,28 @@
 #include "nullscanner.h"
 
 bool NullScanner::scan(PGraph &result){
-     result = new Graph(2);
+
+#ifdef TWO_CLUSTERS
+const int SIZE  = (2);
+#else
+const int SIZE = (3);
+#endif
+
+     result = new Graph(SIZE);
      // vertex setup
      //node 0
-     Graph::vertex_descriptor node = result->m_vertex_set[0];
-     (*result)[node].setNumber(0);
-     (*result)[node].parameters().push_back(1.0f);
+     (*result)[0].setNumber(0);
+     (*result)[0].parameters().push_back(1.0f);
      //node1
-     node = result->m_vertex_set[1];
-     (*result)[node].setNumber(1);
-     (*result)[node].parameters().push_back(0.5f);
+//     node = result->m_vertex_set[1];
+     (*result)[1].setNumber(1);
+     (*result)[1].parameters().push_back(0.5f);
 
      //node2
-#define TWO
-#ifndef TWO
-     node = result->m_vertex_set[2];
-     (*result)[node].setNumber(2);
-     (*result)[node].parameters().push_back(0.5f);
+#ifndef TWO_CLUSTERS
+//     node = result->m_vertex_set[2];
+     (*result)[2].setNumber(2);
+     (*result)[2].parameters().push_back(0.5f);
 #endif
 
      //line initialization
@@ -28,7 +33,7 @@ bool NullScanner::scan(PGraph &result){
      line = add_edge(1,0,*result).first;
      (*result)[line].push_back(0.1f);
 
-     #ifndef TWO
+#ifndef TWO_CLUSTERS
      line = add_edge(1,2,*result).first;
      (*result)[line].push_back(0.05f);
      line = add_edge(0,2,*result).first;

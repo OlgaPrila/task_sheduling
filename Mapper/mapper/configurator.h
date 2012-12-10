@@ -7,6 +7,11 @@
 #include "abstractresultprinter.h"
 #include "graphprinter.h"
 
+
+//#define TWO_CLUSTERS
+#define SECOND_EXAMPLE
+#define TIME_BASED
+
 class Configurator
 {
 public:

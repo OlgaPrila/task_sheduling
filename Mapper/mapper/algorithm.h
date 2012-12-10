@@ -12,16 +12,16 @@ class Algorithm : public AbstractAlgorithm
 {
     // result -array of pairs
     // solution  - pair of result and weight
+public:
+    Algorithm(){}
+    virtual ~Algorithm(){}
+    virtual bool process( Graph * _task,
+                          Graph * _grid, Result & _result);
+protected:
     typedef std::pair<Result,float>   Solution;
-    // array of weights of node - cluster pairs
-    // one node -all clusters
-    typedef std::vector<Solution>  ClusterWeights;
-    //weights of all
-    typedef std::vector<ClusterWeights> NodesAndWeights;
 
-    typedef std::vector<Graph::vertex_descriptor> Selection;
-
-    typedef std::vector<float> Weights;
+    typedef std::vector<Graph::vertex_descriptor> Nodes;
+    typedef std::vector<Graph::edge_descriptor> Edges;
 
     typedef std::pair<Graph::vertex_descriptor, Graph::vertex_descriptor> NodeClusterPair;
     typedef std::vector<NodeClusterPair> NodeClusterCombination;
@@ -34,26 +34,10 @@ class Algorithm : public AbstractAlgorithm
     typedef std::vector<Subset> ManySubsets;
 
 
-    typedef std::vector<Graph::edge_descriptor> Edges;
+    virtual float LineWeight(const NodeClusterPair & src, const NodeClusterPair & dst);
+    virtual float weight(std::vector <float> a, std::vector<float> b);
 
-public:
-    Algorithm(){}
-    virtual ~Algorithm(){}
-    virtual bool process( Graph * _task,
-                          Graph * _grid, Result & _result);
-private:
-    void FillSelectionWithLevel(Selection & select, int level);
-    void CreateCombinations (ManyCombinations & comb, const Selection & curr);
-    void GetAllSubsets(ManySubsets &comb, const Selection &s);
-    void CalculateWeights(ManyWeightedCombinations &cur, const ManyWeightedCombinations &prev);
-    void printWeights(const NodesAndWeights& weights);
-    void printWeightedCombinations( const ManyWeightedCombinations &s);
-    QString CombinationToQString(const NodeClusterCombination &c);
-//    void CalculateOnlyNodesWeights(const ManyCombinations &comb, NodesAndWeights &weights);
-    void InitWeights (const ManyCombinations &selection, ManyWeightedCombinations & weights);
-    void GetAllKSubsetsGrid(ManySubsets &comb, int K);
-    float weight(std::vector <float> a, std::vector<float> b);
-    void GetAllInEdgesTask(Edges &e, Graph::vertex_descriptor v);
+
     Graph* task;
     Graph* grid;
 
@@ -61,6 +45,20 @@ private:
     int gridSize;
     std::vector<unsigned int> levels;
     int maxLevel;
+private:
+    void FillSelectionWithLevel(Nodes & select, int level);
+    void CreateCombinations (ManyCombinations & comb, const Nodes & curr);
+    void GetAllSubsets(ManySubsets &comb, const Nodes &s);
+    void CalculateWeights(ManyWeightedCombinations &cur, const ManyWeightedCombinations &prev);
+//    void printWeights(const NodesAndWeights& weights);
+    void printWeightedCombinations( const ManyWeightedCombinations &s);
+    QString CombinationToQString(const NodeClusterCombination &c);
+//    void CalculateOnlyNodesWeights(const ManyCombinations &comb, NodesAndWeights &weights);
+    void InitWeights (const ManyCombinations &selection, ManyWeightedCombinations & weights);
+    void GetAllKSubsetsGrid(ManySubsets &comb, int K);
+    void GetAllInEdgesTask(Edges &e, Graph::vertex_descriptor v);
+
+
 };
 
 
