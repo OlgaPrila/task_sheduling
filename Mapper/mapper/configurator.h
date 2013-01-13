@@ -7,9 +7,11 @@
 #include "abstractresultprinter.h"
 #include "graphprinter.h"
 
+#include "QIODevice"
+#include <QBuffer>
 
 //#define TWO_CLUSTERS
-#define SECOND_EXAMPLE
+//#define SECOND_EXAMPLE
 #define TIME_BASED
 
 class Configurator
@@ -68,6 +70,9 @@ public:
     void setGridLinePropertiesCount(int i){
         gridLinePropertiesCount = i;
     }
+    QIODevice * getLogDevice(){
+        return log;
+    }
 
 private:
     Configurator(): _errors(),algorithm(NULL), parser(NULL),
@@ -90,7 +95,7 @@ private:
     int gridLinePropertiesCount;
 
     void readSettings();
-
+    QBuffer* log;
 };
 
 #endif // CONFIGURATOR_H

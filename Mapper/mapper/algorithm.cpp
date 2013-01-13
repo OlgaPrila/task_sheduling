@@ -25,11 +25,9 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
         Configurator::instance().errors().push_back("No task or grid provided");
         return 0;
     }
-
+    //инициализация свойств класса
     this->grid = _grid;
     this->task = _task;
-
-
     taskSize = task->m_vertex_set.size();
     gridSize = grid->m_vertex_set.size();
 
@@ -50,48 +48,49 @@ bool Algorithm::process( Graph * _task, Graph * _grid, Result & _result){
     for (unsigned int i= 0;i<levels.size(); ++i){
         qDebug("levels[%d]=%d",i,levels.at(i));
     }
-
-    //    Selection previousSelection;
-    //    NodesAndWeights previousSelectionWeights;
-    //    ManyCombinations previousCombinations;
-
+    // результат размещения предыдущего набора
     ManyWeightedCombinations previousResults;
     // main loop
+    //    выполняем размещение для каждого набора
     for (int level= 0; level < maxLevel +1; ++level ){
         Nodes currentSelection;
+        //        выделяем набор
         FillSelectionWithLevel(currentSelection,level);
         if (currentSelection.size() != levels[level]){
             qDebug("какая то лажа ");
             abort();
         }
         ManyCombinations currentCombs;
+        //        создаем все возможные размещения
         CreateCombinations(currentCombs,currentSelection);
-        //        NodesAndWeights currentWeights;
+
+        //        подготавливаем веса размещений
+//      вычисляем вес размещения блока на кластере без учета предыдущих блоков
         ManyWeightedCombinations results;
         InitWeights(currentCombs,results);
+//     пересчитываем веса размещений  принимая во внимание размещение предыдущих блоков
         CalculateWeights(results,previousResults);
-
-//        printWeights(currentWeights);
+// выводим результат
         printWeightedCombinations(results);
-        //        previousSelection = currentSelection;
-        //        previousSelectionWeights = currentWeights;
-        //        previousCombinations = currentCombs;
+//    резульатт текущего размещеняи становится результатом предыдущего размещения на следующем шаге алгоритма
         previousResults = results;
     }
 
-            Solution ret;
-            ret.second = numeric_limits<float>::max();
-    //    float max = -1;
-    // как то определить найлучший результат
-         foreach (WeightedCombination i, previousResults){
-             if(i.second.second < ret.second){
-                 ret = i.second;
-             }
-         }
-        _result = ret.first;
+    Solution ret;
+    ret.second = numeric_limits<float>::max();
+    // выбираем лучшее размещение
+    foreach (WeightedCombination i, previousResults){
+        if(i.second.second < ret.second){
+            ret = i.second;
+        }
+    }
+//    помещаем его в результат
+    _result = ret.first;
     return true;
 }
 
+// виртуальный метод для нахождения "веса" линии
+// переопределение его позволяет "играться" с алгоритмом в классах-наследниках
 float Algorithm::LineWeight(const NodeClusterPair & src,const NodeClusterPair& dst){
     float ret = 0;
     if (src.second == dst.second){
@@ -109,69 +108,61 @@ float Algorithm::LineWeight(const NodeClusterPair & src,const NodeClusterPair& d
 
 
 
-
-//works
+// подсчет "веса" размещения с учетом предыдущих
 void Algorithm::CalculateWeights(ManyWeightedCombinations &cur, const ManyWeightedCombinations &prev){
     if (prev.empty()){
         return;
     }
-
-    Result nullResult( taskSize,Graph::null_vertex());
-    Solution nullSolution(nullResult, numeric_limits<float>::max());
-
+//  для каждого текущего размещения
     for (ManyWeightedCombinations::iterator weightedPair = cur.begin(); weightedPair != cur.end(); ++weightedPair)
     {
         // if not empty - try to calc weights for links
         NodeClusterCombination & comb = (*weightedPair).first;
-//        Solution & main = (*weightedPair).second;
-            vector<Solution>  solutions;
-            // now we have one combination and lets try to get the best prev combination
-            for (ManyWeightedCombinations::const_iterator prevIter = prev.begin(); prevIter != prev.end(); ++prevIter)
-            {
-                WeightedCombination prevPair = *prevIter;
-                Solution thisTry = prevPair.second;
-                foreach (const NodeClusterPair &dst, comb){
-                    Edges edges;
-                    GetAllInEdgesTask(edges,dst.first);
-                    foreach (Graph::edge_descriptor e, edges)
-                    {
-                        Graph::vertex_descriptor srcTask = source(e,*task);
-                        Graph::vertex_descriptor srcGrid = thisTry.first.at(srcTask);
-                        NodeClusterPair src(srcTask,srcGrid);
-                        float w = LineWeight(src,dst);
-                        thisTry.second += w;
-                                //                        qDebug("Line from %ld on %ld to %ld on %ld", srcTask, srcGrid,dstTask,dstGrid);
+        //        Solution & main = (*weightedPair).second;
+        vector<Solution>  solutions;
+        // now we have one combination and lets try to get the best prev combination
 
-                    }
-                    // put the pair in the result
-                    thisTry.first.at(dst.first)=dst.second;
-                    thisTry.second += weight((*task)[dst.first].parameters(),(*grid)[dst.second].parameters());
-                }
-                qDebug("%2.3f", thisTry.second);
-                solutions.push_back(thisTry);
+//        перебираем все предыдущие размещения
+        for (ManyWeightedCombinations::const_iterator prevIter = prev.begin(); prevIter != prev.end(); ++prevIter)
+        {
+            WeightedCombination prevPair = *prevIter;
+            Solution thisTry = prevPair.second;
+//вычисляем суммарный вес всех линий
+            foreach (const NodeClusterPair &dst, comb){
+                Edges edges;
+                GetAllInEdgesTask(edges,dst.first);
+                foreach (Graph::edge_descriptor e, edges)
+                {
+                    Graph::vertex_descriptor srcTask = source(e,*task);
+                    Graph::vertex_descriptor srcGrid = thisTry.first.at(srcTask);
+                    NodeClusterPair src(srcTask,srcGrid);
+                    float w = LineWeight(src,dst);
+                    thisTry.second += w;
+                    //                        qDebug("Line from %ld on %ld to %ld on %ld", srcTask, srcGrid,dstTask,dstGrid);
 
-            } // previous combinations loop
-            float max = numeric_limits<float>::max();
-            foreach (Solution s, solutions)
-            {
-                if (s.second < max){
-                    (*weightedPair).second = s;
-//                    main.second = s.second;
-//                    main.first = s.first;
-                    max = s.second;
                 }
+                // put the pair in the result
+                thisTry.first.at(dst.first)=dst.second;
+                thisTry.second += weight((*task)[dst.first].parameters(),(*grid)[dst.second].parameters());
             }
-            qDebug("Result weight = %2.3f",(*weightedPair).second.second);
-            qDebug(" ");
+            QDebug(Configurator::instance().getLogDevice()) << QString("%1").arg(thisTry.second,5,'f',3) << "\n" ;
+            solutions.push_back(thisTry);
+
+        } // previous combinations loop
+        float max = numeric_limits<float>::max();
+//        выбираем из всех вариантов - лучший
+        foreach (Solution s, solutions)
+        {
+            if (s.second < max){
+                (*weightedPair).second = s;
+                max = s.second;
+            }
+        }
+        QDebug(Configurator::instance().getLogDevice()) << QString("Result weight = %1").arg( (*weightedPair).second.second) << "\n";
     } // current loop
 }
-
+// находит все входящие в вершину линии
 void Algorithm::GetAllInEdgesTask(Edges & e, Graph::vertex_descriptor v){
-    //   std::pair<Graph::in_edge_iterator, Graph::in_edge_iterator> p;
-    //   in_edges(v,*task);
-    //   while( p.first != p.second){
-    //       e.push_back( *(p.first++) );
-    //   }
     for (Graph::vertex_iterator u = task->m_vertex_set.begin(); u!= task->m_vertex_set.end(); ++u){
         std::pair<Graph::edge_descriptor, bool> p = edge(*u,v,*task);
         if(p.second){
@@ -179,17 +170,15 @@ void Algorithm::GetAllInEdgesTask(Edges & e, Graph::vertex_descriptor v){
         }
 
     }
-//    qDebug("in-edge size for v%ld =%ld ",v,e.size());
+    //    qDebug("in-edge size for v%ld =%ld ",v,e.size());
 }
-
+// предварительное вычисление весов размещений
 void Algorithm::InitWeights(const ManyCombinations & combinations ,ManyWeightedCombinations &weights){
     weights.clear();
     Result nullResult( taskSize,Graph::null_vertex());
     Solution nullSolution(nullResult, 0.0f);
-//    ClusterWeights nullCluster( grid->m_vertex_set.size(),nullSolution);
 
     for (ManyCombinations::const_iterator i = combinations.begin(); i!= combinations.end(); ++i){
-//        NodesAndWeights w(task->m_vertex_set.size(), nullCluster);
         NodeClusterCombination const & c = *i;
         Solution s(nullSolution);
         s.second = 0;
@@ -199,29 +188,14 @@ void Algorithm::InitWeights(const ManyCombinations & combinations ,ManyWeightedC
             r.at(p.first) = p.second;
 
             s.second += weight( (*task)[p.first].parameters(),
-                               (*grid)[p.second].parameters() );
+                                (*grid)[p.second].parameters() );
         }
         weights.push_back(WeightedCombination(c,s));
     }
-//    weights.resize( task->m_vertex_set.size(), nullCluster );
-//    for (Selection::const_iterator i = selection.begin(); i!= selection.end(); ++i){
-//        Graph::vertex_descriptor node= *i;
-//        ClusterWeights cluster(grid->m_vertex_set.size(),nullSolution) ;
-//        for ( Graph::vertex_iterator g = grid->m_vertex_set.begin();
-//              g != grid->m_vertex_set.end(); ++g ){
 
-//            float we = weight( (*task)[node].parameters(),
-//                               (*grid)[*g].parameters() );
-//            cluster[*g].first.at(node) =  (*g);
-//            cluster[*g].second = we;
-
-
-//        }
-//        weights.at(node)=cluster;
-//    }
 }
 
-//работает
+// заполнение текущего набора
 void Algorithm::FillSelectionWithLevel(Nodes &select, int level){
     for (Graph::vertex_iterator vertexIterator=this->task->m_vertex_set.begin();
          vertexIterator != this->task->m_vertex_set.end();
@@ -232,7 +206,7 @@ void Algorithm::FillSelectionWithLevel(Nodes &select, int level){
         }
     }
 }
-//работает
+// создание всех возможных вариантов размещений
 void  Algorithm::CreateCombinations(ManyCombinations &comb, const Nodes &curr){
     if (curr.size() > (unsigned int) gridSize ){
         qDebug("какая то лажа ");
@@ -247,8 +221,6 @@ void  Algorithm::CreateCombinations(ManyCombinations &comb, const Nodes &curr){
         //        для каждой допустимой перестановки к-подмножества создаем комбинацию
         do {
             NodeClusterCombination combination;
-            //            qDebug( "Begin combo");
-
             if (curr.size() != ss.size()){
                 qDebug("какая то лажа ");
                 abort();
@@ -263,44 +235,15 @@ void  Algorithm::CreateCombinations(ManyCombinations &comb, const Nodes &curr){
                 //                qDebug("Pair %ld , %ld", pair.first, pair.second );
                 combination.push_back(pair);
             }
-
             //            qDebug( "End combo");
             comb.push_back(combination);
         }   while(next_permutation(ss.begin(), ss.end()));
     }
-    qDebug("Combinations count %ld", comb.size());
+    QDebug(Configurator::instance().getLogDevice()) <<  QString("Combinations count %1").arg(comb.size()) << "\n";
 }
 
-//работает но  выводит только вес
-//void Algorithm::printWeights(const NodesAndWeights &weights){
-//    qDebug("printWeights %ld", weights.size());
-//    for (unsigned int i=0; i!= weights.size(); ++i ){
-//        QString str = "Node "+ QString::number(i) + ":";
-//        for(unsigned int j = 0; j != weights.at(i).size(); ++j){
-//            QString str2 = "(n=" +QString::number(j) + " w=" ;
-//            Solution s = weights.at(i).at(j);
-//            str2.append(QString::number(s.second));
-//            str2.append("; ");
-//            for (unsigned int k =0; k< s.first.size(); k++){
-//                str2.append("(");
-//                str2.append(QString::number(k));
-//                str2.append(",");
-//                if (s.first.at(k) > (unsigned int) grid->m_vertex_set.size()){
-//                    str2.append("-1");
-//                }else {
-//                    str2.append( QString::number(s.first.at(k)));
-//                }
-//                //                str2.append("; ");
-//                str2.append(")");
-//            }
-//            str2.append("); ");
-//            str.append(str2);
-//        }
-//        qDebug() << str;
-//    }
-//}
 
-
+// отладочный вывод
 void Algorithm::printWeightedCombinations(const ManyWeightedCombinations & s){
     for (ManyWeightedCombinations::const_iterator i = s.begin(); i!= s.end(); ++i){
         const WeightedCombination & c = *i;
@@ -324,7 +267,7 @@ void Algorithm::printWeightedCombinations(const ManyWeightedCombinations & s){
         }
         str2.append("); ");
         str.append(str2);
-        qDebug() << str;
+        QDebug(Configurator::instance().getLogDevice())  << str << "\n";
     }
 }
 
@@ -357,27 +300,48 @@ void Algorithm::GetAllSubsets(ManySubsets &comb,const Nodes & s){
     }
 }
 
-// работает
-// только до К =5 , при условии что в гриде не больше 5 вершин.
-void Algorithm::GetAllKSubsetsGrid(ManySubsets &subsets, int K){
-    //    только до 2 в  5
-    const int magic[][11] = {
-        { 0,  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},   // 0 единиц в числе - 0 чисел
-        { 5,  0x01,0x02,0x04,0x08,0x10,0x00,0x00,0x00,0x00,0x00},   // 1 единица в числе - 5 чисел
-        { 10, 0x03,0x05,0x06,0x09,0x0A,0x0C,0x11,0x12,0x14,0x18},   // 2   - 10
-        { 10, 0x07,0x0B,0x0D,0x0E,0x13,0x15,0x16,0x19,0x1A,0x1C},    // 3   - 10
-        { 5,  0x0F,0x17,0x1B,0x1D,0x1E,0x00,0x00,0x00,0x00,0x00},
-        { 1,  0x1F,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
-    };
-    if (K > 5 || grid->m_vertex_set.size() > 5 || K > grid->m_vertex_set.size()){
-        qDebug("какая то лажа ");
-        abort();
+
+std::vector<int> getAllKBits( int K, int max)
+{
+    std::vector< int > result;
+    int maxSize = pow( 2, max );
+    for (int number = 0; number < maxSize; ++number )
+    {
+        int count = 0;
+        for (int j = 0; j < max; ++j)
+        {
+            int k = 1 << j;
+            if ( number & k )
+            {
+                count ++;
+            }
+        }
+        if (count == K)
+        {
+            result.push_back(number);
+        }
     }
+    return result;
+}
+
+// работает
+//нахождение всех К подмножеств множества основано на переборе
+// всех чисел от 0 до 2^К у которых ровно К единичных битов (К-чисел)
+
+
+// при проходе по множеству элементов элементы добавляются в результирующее подмножество
+// только в том случае если бит с таким же смещением равен 1,
+
+// количество подмножеств равно количесву К-чисел
+void Algorithm::GetAllKSubsetsGrid(ManySubsets &subsets, int K){
+
     int size = grid->m_vertex_set.size();
-    // с единицы потому что первый элемент массива количество
-    for (int magicIndex = 1; magicIndex <  magic[K][0]+1; ++magicIndex){
+    std::vector <int> kVector(getAllKBits(K, size));
+    for (unsigned int index = 0; index < kVector.size(); ++index)
+    {
         Subset ss;
-        int magicNumber = magic[K][magicIndex];
+
+        int magicNumber = kVector.at(index);
         int max = pow(2,size) -1; // max allowed
         if (magicNumber > max) {
             continue;
@@ -390,11 +354,13 @@ void Algorithm::GetAllKSubsetsGrid(ManySubsets &subsets, int K){
             }
         }
         subsets.push_back(ss);
-        //     ?   qDebug ("K = %d, index = %d, magic number = %d, size = %ld",K,magicIndex,magic[K][magicIndex],ss.size());
+        qDebug ("K = %d, index = %d, magic number = %d, size = %ld",K,index,magicNumber,ss.size());
     }
-    //    qDebug("K = %d, size = %ld",K,subsets.size());
+    qDebug("K = %d, size = %ld",K,subsets.size());
 }
 
+
+// виртуальный метод для определения веса из наборов параметров
 float Algorithm::weight(vector<float> a, vector<float> b){
     return a[0]/b[0];
 }
